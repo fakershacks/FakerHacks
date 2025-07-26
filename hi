@@ -1,0 +1,48 @@
+-- Location jumpscare UI
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local PlayerGui = player:WaitForChild("PlayerGui")
+
+-- Try to fetch IP and region from ipinfo.io
+local success, response = pcall(function()
+ local http = syn and syn.request or http_request or http and http.get
+ return http({
+ Url = "https://ipinfo.io/json",
+ Method = "GET"
+ })
+end)
+
+local location = "Unknown Location"
+if success and response and response.Body then
+ local body = response.Body
+ if typeof(body) == "function" then body = body() end
+ local data = game:GetService("HttpService"):JSONDecode(body)
+ location = data.city and (data.city .. ", " .. data.country) or data.country or "Unknown"
+end
+
+-- Make full-screen black GUI
+local gui = Instance.new("ScreenGui", PlayerGui)
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+gui.Name = "CreepyLocationLock"
+
+local bg = Instance.new("Frame", gui)
+bg.Size = UDim2.new(1, 0, 1, 0)
+bg.Position = UDim2.new(0, 0, 0, 0)
+bg.BackgroundColor3 = Color3.new(0, 0, 0)
+
+local text = Instance.new("TextLabel", bg)
+text.Size = UDim2.new(1, 0, 1, 0)
+text.Position = UDim2.new(0, 0, 0, 0)
+text.Text = "Im watching:\n\n" .. location
+text.TextScaled = true
+text.TextColor3 = Color3.fromRGB(255, 0, 0)
+text.BackgroundTransparency = 1
+text.Font = Enum.Font.Code
+text.TextStrokeTransparency = 0.7
+
+-- Lock cursor and remove UI (optional)
+pcall(function()
+ player.DevComputerCameraMode = Enum.DevComputerCameraMovementMode.LockFirstPerson
+ player.DevEnableMouseLock = false
+end)
